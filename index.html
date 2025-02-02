@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="vievport" content="width=device-width, initial-scale=1.0">
+    <title>Calekulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<!--Load the display with the 0 variable-->
+<body onload="updateVar(displayPlaceholder)" class="body">
+    <!--Calculator containter-->
+    <div class="base">
+        <!--Display-->
+        <div id="display" class="display"></div>
+
+        <!--Buttons-->
+        <div class="buttonsContainer">
+            <button class="buttons", onclick="parseButtons(0)">AC</button>
+            <button class="buttons", onclick="parseButtons(1)">+/-</button>
+            <button class="buttons", onclick="parseButtons(2)">%</button>
+            <button class="buttons", onclick="parseButtons(3)">÷</button>
+            <button class="buttons", onclick="parseButtons(4)">7</button>
+            <button class="buttons", onclick="parseButtons(5)">8</button>
+            <button class="buttons", onclick="parseButtons(6)">9</button>
+            <button class="buttons", onclick="parseButtons(7)">×</button>
+            <button class="buttons", onclick="parseButtons(8)">4</button>
+            <button class="buttons", onclick="parseButtons(9)">5</button>
+            <button class="buttons", onclick="parseButtons(10)">6</button>
+            <button class="buttons", onclick="parseButtons(11)">-</button>
+            <button class="buttons", onclick="parseButtons(12)">1</button>
+            <button class="buttons", onclick="parseButtons(13)">2</button>
+            <button class="buttons", onclick="parseButtons(14)">3</button>
+            <button class="buttons", onclick="parseButtons(15)">+</button>
+            <button class="buttons", onclick="parseButtons(16)">0</button>
+            <button class="buttons", onclick="parseButtons(17)">.</button>
+            <button class="buttons", onclick="parseButtons(18)">=</button>
+        </div>
+    </div>
+</body>
+
+<script>
+    // Variables
+    var displayPlaceholder = "0";    
+    var tmpVariable = "0";
+    var lastOperator = "";
+    var lastInput = "";
+    
+    function updateVar(displayVar){
+        // Update the display on calculator
+        document.getElementById("display").innerHTML = displayVar;
+    }
+
+    function parseButtons(buttonNum){
+        // Check what buttom was clicked, then do each case as it should
+        switch(buttonNum){
+            case 0:
+                console.log("AC");
+                clear();
+                break;
+            case 1:
+                console.log("+/-");
+                changeExpression();
+                break;
+            case 2:
+                console.log("%");
+                operate("%");
+                break;
+            case 3:
+                console.log("/");
+                operate("/");
+                break;
+            case 4:
+                console.log("7");
+                addNumber("7");
+                break;
+            case 5:
+                console.log("8");
+                addNumber("8");
+                break;
+            case 6:
+                console.log("9");
+                addNumber("9");
+                break;
+            case 7:
+                console.log("*");
+                operate("*");
+                break;
+            case 8:
+                console.log("4");
+                addNumber("4");
+                break;
+            case 9:
+                console.log("5");
+                addNumber("5");
+                break;
+            case 10:
+                console.log("6");
+                addNumber("6");
+                break;
+            case 11:
+                console.log("-");
+                operate("-");
+                break;
+            case 12:
+                console.log("1");
+                addNumber("1");
+                break;
+            case 13:
+                console.log("2");
+                addNumber("2");
+                break;
+            case 14:
+                console.log("3");
+                addNumber("3");
+                break;
+            case 15:
+                console.log("+");
+                operate("+");
+                break;
+            case 16:
+                console.log("0");
+                addNumber("0");
+                break;
+            case 17:
+                console.log(".");
+                addNumber(".");
+                break;
+            case 18:
+                console.log("=");
+                operate("=");
+                break;
+            default:
+                console.log("Something went wrong.");
+                break;
+        }
+    }
+
+    function clear(){
+        // Clear all previous inputs, fresh start
+        lastInput = "";
+        lastOperator = "";
+        displayPlaceholder = "0";
+        tmpVariable = "0";
+        updateVar(displayPlaceholder);
+    }
+
+    function addNumber(number){
+        // Change last input, Works with commas too
+        lastInput = number;
+
+        // If calculator displays 0, change variable to avoid "01"
+        if (displayPlaceholder == "0"){
+            displayPlaceholder = number;
+        }
+        // Otherwise just add the string to the placeholder 
+        else {
+            displayPlaceholder += number;
+        }
+        // Update display after each press
+        updateVar(displayPlaceholder);
+    }
+
+    function operate(operator){
+        //Disallow same operator back to back
+        if (operator == lastInput){
+            return;
+        }
+
+        // Change last input
+        lastInput = operator;
+
+        // Special case for =
+        if (operator == "="){
+            // Disallow to use = when it was the last operator
+            // Disallow to use = if its the first operator
+            if (lastOperator == "=" || lastOperator == ""){ 
+                return;
+            }
+            // Do the calculation
+            else{      
+                tmpVariable = doMath(parseFloat(tmpVariable), parseFloat(displayPlaceholder), lastOperator)
+                updateVar(tmpVariable);
+                lastOperator = operator;
+            }
+            return;
+        }
+
+        // Some minus button mitigations
+        if (tmpVariable == "0"){
+            if (operator == "-" && lastOperator != ""){ 
+                tmpVariable = -(displayPlaceholder);
+            }
+            else{
+                tmpVariable = displayPlaceholder;
+            }
+        }
+        // Do calculations, but not if = was the last operator
+        else{
+            if (lastOperator != "="){
+                tmpVariable = doMath(parseFloat(tmpVariable), parseFloat(displayPlaceholder), operator)
+                updateVar(tmpVariable);
+            }
+        }
+
+        // Reset display placeholder, so next input will start fresh
+        displayPlaceholder = "0";
+
+        // Track in case of = operator
+        lastOperator = operator;
+    }
+    
+    // Simplify the operations 
+    function doMath(variable1, variable2, operator) {
+        const operations = {
+            "+": (a, b) => a + b,
+            "-": (a, b) => a - b,
+            "*": (a, b) => a * b,
+            "/": (a, b) => b !== 0 ? a / b : "no",
+            "%": (a, b) => a / 100
+        };
+
+        return operations[operator] ? operations[operator](variable1, variable2) : "Invalid Operator";
+    }
+
+    // Change expression of placeholder variable
+    function changeExpression(){
+        if (lastOperator != "="){
+            displayPlaceholder = -(displayPlaceholder);
+            updateVar(displayPlaceholder);
+        }
+        else{
+            tmpVariable = -(tmpVariable);
+            updateVar(tmpVariable);
+        }
+    }
+</script>
+
+</html> 
